@@ -111,6 +111,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="bnode.h" />
+    <ClInclude Include="bst.h" />
+    <ClInclude Include="map.h" />
     <ClInclude Include="pair.h" />
     <ClInclude Include="wordCount.h" />
   </ItemGroup>
