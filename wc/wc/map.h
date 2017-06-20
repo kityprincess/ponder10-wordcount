@@ -22,9 +22,9 @@ public:
    bool operator == (const MapIterator<K, V> & rhs);
    bool operator != (const MapIterator<K, V> & rhs);
    // TODO: Impelement the increment and decrement
-   MapIterator <K, V> & operator --() { return *this; }
-   MapIterator <K, V> & operator ++() { return *this; }
-   
+   MapIterator <K, V> & operator --() { --it; return *this; }
+   MapIterator <K, V> & operator ++() { ++it; return *this; }
+
    V & operator *() { return (*it).second; }
 
 private:
