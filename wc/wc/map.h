@@ -5,26 +5,93 @@
 #include "bst.h"
 #include "pair.h"
 
+/*************************************************************************
+* CLASS: MAPITERATOR
+* Iterator for a map
+**************************************************************************/
+template <class K, class V>
+class MapIterator
+{
+public:
+   MapIterator() {}
+   ~MapIterator() {}
+   MapIterator(const MapIterator <K, V> & in_source);
+   MapIterator <K, V> & operator = (const MapIterator <K, V> & rhs);
+
+   bool operator == (const MapIterator<K, V> & rhs);
+   bool operator != (const MapIterator<K, V> & rhs);
+
+private:
+   BSTIterator<V> it;
+};
+
+/*******************************************
+* MAPITERATOR :: COPY CONSTRUCTOR
+*******************************************/
+template <class K, class V>
+MapIterator <K, V> ::MapIterator(const MapIterator <K, V> & in_source)
+{
+   *this = in_source;
+}
+
+/*******************************************
+* MAPITERATOR :: ASSIGNMENT OPERATOR
+*******************************************/
+template <class K, class V>
+MapIterator <K, V> & MapIterator <K, V> :: operator = (const MapIterator <K, V> & rhs)
+{
+   it->nodes = rhs.nodes;
+   return *it;
+}
+
+/************************************************************************
+* :: EQUAL (MAPITERATOR)
+* Indicates whether two MapIterators point to the same node
+*************************************************************************/
+template <class K, class V>
+bool MapIterator<K, V> :: operator == (const MapIterator<K, V> & rhs)
+{
+   return it == rhs.it; // nodes.top() == rhs.nodes.top();
+}
+
+/************************************************************************
+* :: NOT EQUAL (MAPITERATOR)
+* Indicates whether two MapIterators point to the same node
+*************************************************************************/
+template <class K, class V>
+bool MapIterator<K, V> :: operator != (const MapIterator<K, V> & rhs)
+{
+   return it != rhs.it; // nodes.top() != rhs.nodes.top();
+}
+
+//operator ==	Bryan
+//operator !=	Bryan
+
+/*************************************************************************
+* CLASS: MAP
+* Defines the map class
+**************************************************************************/
 template <class K, class V>
 class Map
 {
 public:
    Map() : numItems(0) {}
-   ~Map() { bst.clear(); }
+   ~Map() { clear(); }
    Map(const Map <K, V> & in_source) throw (const char *);
-   bool empty() const { bst.empty(); }
-   int size() const { bst.size(); }
-   
+   Map <K, V> operator = (const Map <K, V> & rhs) throw (const char *);
+
+   bool empty() const { return bst.empty(); }
+   int size() const { return bst.size(); }
+   void clear() { bst.clear(); }
+
+   MapIterator<K, V> begin() const { return bst.begin(); }
+   MapIterator<K, V> end() { return bst.end(); }
+   MapIterator<K, V> rbegin() const { return bst.rbegin(); }
+   MapIterator<K, V> rend() { return bst.rend(); }
+
 private:
    int numItems;
    BST < Pair < K, V > > bst;
-};
-
-class MapIterator
-{
-public:
-   bool operator == (const MapIterator<K, V> & rhs);
-   bool operator != (const MapIterator<K, V> & rhs);
 };
 
 /******************************************************************
@@ -40,35 +107,12 @@ Map <K, V> :: Map(const Map <K, V> & in_source) throw (const char *)
 /******************************************************************
 * MAP :: ASSIGNMENT OPERATOR
 *******************************************************************/
-template <class K, V>
-Map <K, V> Map <K, V> :: operator = (const Map <K, V> & rhs)
+template <class K, class V>
+Map <K, V> Map <K, V> :: operator = (const Map <K, V> & rhs) throw (const char *)
 {
-   this->bst = in_source.bst;
-   this->numItems = in_source.numItems;
+   this->bst = rhs.bst;
+   this->numItems = rhs.numItems;
    return *this;
 }
-
-/************************************************************************
-* :: EQUAL (MAPITERATOR)
-* Indicates whether two MapIterators point to the same node
-*************************************************************************/
-template <class K, class V>
-bool MapIterator<K, V> :: operator == (const MapIterator<K, V> & rhs)
-{
-   return; // nodes.top() == rhs.nodes.top();
-}
-
-/************************************************************************
-* :: NOT EQUAL (MAPITERATOR)
-* Indicates whether two MapIterators point to the same node
-*************************************************************************/
-template <class K, class V>
-bool MapIterator<K, V> :: operator != (const MapIterator<K, V> & rhs)
-{
-   return; // nodes.top() != rhs.nodes.top();
-}
-//operator ==	Bryan
-//operator !=	Bryan
-
 
 #endif //MAP_H
