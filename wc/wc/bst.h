@@ -404,6 +404,7 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
       {
          in_subtree = new BinaryNode <T>(in_value);
          in_subtree->pParent = parent;
+         redBlack(in_subtree);
       }
       catch (bad_alloc ex)
       {
@@ -416,6 +417,38 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
       insertInternal(in_value, in_subtree->pRight, in_subtree);
    else
       return;
+}
+
+/**************************************************
+* BST :: REDBLACK
+* Implements a recursive algorithm to insert a
+* binary node in the right spot
+* Note: DOES NOT ATTEMPT TO BALANCE THE TREE
+*************************************************/
+template<class T>
+void BST<T> :: redBlack(BinaryNode<T> * & in_node)
+{
+   if (in_node->pParent == NULL)
+      root->isRed = false;
+   else if (!in_node->pParent->isRed)
+      root->isRed = true;
+   else if (in_node->pParent->isRed &&
+            !in_node->pParent->pParent->isRed &&)
+   {
+      BinaryNode <T> * otherChild = NULL;
+      if (in_node->pParent->pParent->isLeftChild(in_node->pParent->pParent))
+         otherChild = in_node->pParent->pParent->pRight;
+      else 
+         otherChild = in_node->pParent->pParent->pLeft;
+      if (otherChild->isRed)
+      {
+         in_node->pParent->pParent->isRed = true;
+         in_node->pParent = false;
+         otherChild->isRed = false;
+      }
+      if (in_node->pParent->pParent->pParent->isRed)
+         redBlack(in_node->pParent->pParent->pParent)
+   }
 }
 
 /**************************************************
