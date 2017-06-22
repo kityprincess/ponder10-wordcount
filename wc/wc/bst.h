@@ -40,7 +40,7 @@ public:
    }
    // We assume that the source has a well-formed stack that has a NULL
    // at its head
-   BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
+   BSTIterator(std::stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
    BSTIterator(const BSTIterator <T> & in_source);
    BSTIterator <T> & operator = (const BSTIterator <T> & rhs);
    BSTIterator <T> & operator -- ();
@@ -50,7 +50,7 @@ public:
    T & operator * () const { return nodes.top()->data; }
 
 private:
-   stack<BinaryNode<T> * > nodes;
+   std::stack<BinaryNode<T> * > nodes;
 };
 
 /*******************************************
@@ -210,6 +210,8 @@ public:
 
    BinaryNode <T> * getRoot() const { return root; }
 
+   void redBlack(BinaryNode<T> * & in_node);
+
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, BinaryNode<T> * parent);
    BinaryNode <T> * findLeft(BinaryNode <T> * pElement) const;
@@ -345,7 +347,7 @@ BSTIterator<T> BST<T> :: begin() const
    // Per the guidance in the assignment, it is best
    // if the iterator already has a stack with the nodes
    // from the left-most element to the root of the tree
-   stack<BinaryNode<T> *> temp;
+   std::stack<BinaryNode<T> *> temp;
 
    // We push a NULL at the head of the stack so that
    // we know when we've reached the end
@@ -376,7 +378,7 @@ BSTIterator<T> BST<T> :: rbegin() const
    // This works the same as the BEGIN function
    // except that here we want to build the stack
    // from the root to the rightmost node
-   stack<BinaryNode<T> *> temp;
+   std::stack<BinaryNode<T> *> temp;
    temp.push(NULL);
 
    BinaryNode<T> * node = root;
@@ -406,7 +408,7 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
          in_subtree->pParent = parent;
          redBlack(in_subtree);
       }
-      catch (bad_alloc ex)
+      catch (std::bad_alloc ex)
       {
          throw "ERROR: Unable to allocate a node";
       }
@@ -433,7 +435,7 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    else if (!in_node->pParent->isRed)
       root->isRed = true;
    else if (in_node->pParent->isRed &&
-            !in_node->pParent->pParent->isRed &&)
+            !in_node->pParent->pParent->isRed)
    {
       BinaryNode <T> * otherChild = NULL;
       if (in_node->pParent->pParent->isLeftChild(in_node->pParent->pParent))
@@ -443,11 +445,11 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
       if (otherChild->isRed)
       {
          in_node->pParent->pParent->isRed = true;
-         in_node->pParent = false;
+         in_node->pParent->isRed = false;
          otherChild->isRed = false;
       }
       if (in_node->pParent->pParent->pParent->isRed)
-         redBlack(in_node->pParent->pParent->pParent)
+         redBlack(in_node->pParent->pParent->pParent);
    }
 }
 
