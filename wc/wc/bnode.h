@@ -22,10 +22,10 @@ template <class T>
 class BinaryNode
 {
 public:
-   BinaryNode() : pLeft(NULL), pRight(NULL), pParent(NULL), numElements(1)
+   BinaryNode() : pLeft(NULL), pRight(NULL), pParent(NULL), numElements(1), isRed(true)
    {
    }
-   BinaryNode(T in_data) : data(in_data), pRight(NULL), pParent(NULL), pLeft(NULL), numElements(1)
+   BinaryNode(T in_data) : data(in_data), pRight(NULL), pParent(NULL), pLeft(NULL), numElements(1), isRed(true)
    {
    }
 

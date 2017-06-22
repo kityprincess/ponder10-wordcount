@@ -433,7 +433,7 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    if (in_node->pParent == NULL)
       root->isRed = false;
    else if (!in_node->pParent->isRed)
-      root->isRed = true;
+      root->isRed = true; // This is causing a problem
    else if (in_node->pParent->isRed &&
             (in_node->pParent->pParent && !in_node->pParent->pParent->isRed))
    {
