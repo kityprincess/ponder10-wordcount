@@ -435,7 +435,7 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    else if (!in_node->pParent->isRed)
       root->isRed = true;
    else if (in_node->pParent->isRed &&
-            !in_node->pParent->pParent->isRed)
+            (in_node->pParent->pParent && !in_node->pParent->pParent->isRed))
    {
       BinaryNode <T> * otherChild = NULL;
       if (in_node->pParent->pParent->isLeftChild(in_node->pParent->pParent))
