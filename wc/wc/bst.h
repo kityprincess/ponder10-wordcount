@@ -430,14 +430,24 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
 template<class T>
 void BST<T> :: redBlack(BinaryNode<T> * & in_node)
 {
+   // pg 219 
+   // case 1 - no parent, in_node is root
+   // set in_node to black
    if (in_node->pParent == NULL)
-      root->isRed = false;
+      in_node->isRed = false;
+   // case 2 - parent is black
+   // do nothing
    else if (!in_node->pParent->isRed)
-      root->isRed = true; // This is causing a problem
+      return;
+   // case 3 - parent is red, aunt is red or na, gp is black
+   // change gp to red, parent & aunt to black
    else if (in_node->pParent->isRed &&
-            (in_node->pParent->pParent && !in_node->pParent->pParent->isRed))
+           (!in_node->pParent->pParent->isRed))
    {
       BinaryNode <T> * otherChild = NULL;
+      //Exception thrown: read access violation.
+      //otherChild was nullptr.
+      // need to account for no aunt
       if (in_node->pParent->pParent->isLeftChild(in_node->pParent->pParent))
          otherChild = in_node->pParent->pParent->pRight;
       else 
@@ -448,8 +458,9 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
          in_node->pParent->isRed = false;
          otherChild->isRed = false;
       }
-      if (in_node->pParent->pParent->pParent->isRed)
-         redBlack(in_node->pParent->pParent->pParent);
+      // meant to accomodate for red great-grandparent
+//      if (in_node->pParent->pParent->pParent->isRed)
+//         redBlack(in_node->pParent->pParent->pParent);
    }
 }
 
