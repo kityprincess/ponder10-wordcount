@@ -18,9 +18,8 @@ using namespace std;
 typedef int Count;
 
 /*****************************************************
-* WORD COUNT
-* Prompt the user for a file to read, then prompt the
-* user for words to get the count from
+* READFILE
+* Read in the file and search for the word
 *****************************************************/
 void readFile(Map <string, Count> & counts, const string & fileName)
 {
@@ -42,8 +41,7 @@ void readFile(Map <string, Count> & counts, const string & fileName)
 
 /*****************************************************
 * DISPLAY
-* Prompt the user for a file to read, then prompt the
-* user for words to get the count from
+* Display the word & its count
 *****************************************************/
 void display(Map <string, Count> & counts)
 {
@@ -75,5 +73,4 @@ void wordCount()
    cin >> fileName;
    readFile(counts, fileName);
    display(counts);
-
 }
