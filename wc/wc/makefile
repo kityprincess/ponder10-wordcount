@@ -1,7 +1,7 @@
 ###############################################################
 # Program:
 #     Week 10, Map
-#     Brother JonesL, CS265
+#     Brother JonesL, CS235
 # Author:
 #     Kimberly Stowe - 5 hours
 #     Matt Burr -      5 hours
