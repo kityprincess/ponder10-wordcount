@@ -430,37 +430,92 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
 template<class T>
 void BST<T> :: redBlack(BinaryNode<T> * & in_node)
 {
+   // create pointers to make coding simpler
+   // pointer for new node's parent
+   BinaryNode <T> * parent = in_node->pParent;
+   
+   // pointer for new node's grandparent
+   BinaryNode <T> * granny = NULL;
+   if (parent != NULL)
+      granny = in_node->pParent->pParent;
+   
+   // pointer for new node's aunt
+   BinaryNode <T> * aunt = NULL;
+   if (granny != NULL && granny->isLeftChild(parent))
+      aunt = granny->pRight;
+   else if (granny != NULL && granny->isRightChild(parent))
+      aunt = granny->pLeft;
+
+   // pointer for new node's sibling
+   BinaryNode <T> * sibling = NULL;
+   if (parent != NULL && parent->isLeftChild(in_node))
+      sibling = parent->pRight;
+   else if (parent != NULL && parent->isRightChild(in_node))
+      sibling = parent->pLeft;
+
    // pg 219 
    // case 1 - no parent, in_node is root
    // set in_node to black
-   if (in_node->pParent == NULL)
+   if (parent == NULL)
       in_node->isRed = false;
    // case 2 - parent is black
    // do nothing
-   else if (!in_node->pParent->isRed)
+   else if (!parent->isRed)
       return;
    // case 3 - parent is red, aunt is red or na, gp is black
    // change gp to red, parent & aunt to black
-   else if (in_node->pParent->isRed &&
-           (!in_node->pParent->pParent->isRed))
+   else if (parent->isRed &&
+           (!granny->isRed))
    {
-      BinaryNode <T> * otherChild = NULL;
-      //Exception thrown: read access violation.
-      //otherChild was nullptr.
-      // need to account for no aunt
-      if (in_node->pParent->pParent->isLeftChild(in_node->pParent->pParent))
-         otherChild = in_node->pParent->pParent->pRight;
-      else 
-         otherChild = in_node->pParent->pParent->pLeft;
-      if (otherChild->isRed)
+      if (aunt != NULL && aunt->isRed)
       {
-         in_node->pParent->pParent->isRed = true;
-         in_node->pParent->isRed = false;
-         otherChild->isRed = false;
+      //   granny->isRed = true;
+         aunt->isRed = false;
       }
-      // meant to accomodate for red great-grandparent
-//      if (in_node->pParent->pParent->pParent->isRed)
-//         redBlack(in_node->pParent->pParent->pParent);
+      parent->isRed = false;
+
+      // accomodates for red great-grandparent
+      //if (granny->pParent != NULL && granny->pParent->isRed)
+      //   redBlack(granny->pParent);
+   }
+   // case 4.1
+   if (parent != NULL && parent->isRed && !granny->isRed && 
+      !sibling->isRed && !aunt->isRed && parent->isLeftChild(in_node) &&
+      granny->isLeftChild(parent))
+   {
+      if (granny->pParent == NULL)
+      {
+         root = parent;
+      }
+      parent->addRight(granny);
+      in_node->addRight(sibling);
+
+      granny->isRed = true;
+      parent->isRed = false;
+   }
+
+   // case 4.2
+   if (parent != NULL && parent->isRed && !granny->isRed && 
+      !sibling->isRed && !aunt->isRed && parent->isRightChild(in_node) &&
+      granny->isRightChild(parent))
+   {
+      if (granny->pParent == NULL)
+      {
+         root = parent;
+      }
+      parent->addLeft(granny);
+      granny->addRight(sibling);
+
+      granny->isRed = true;
+      parent->isRed = false;
+   }
+
+   // case 4.4
+   if (parent != NULL && parent->isRed && !granny->isRed &&
+      !sibling->isRed && !aunt->isRed && parent->isLeftChild(in_node) &&
+      granny->isRightChild(parent))
+   {
+
    }
 }
 
