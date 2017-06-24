@@ -216,6 +216,8 @@ private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, BinaryNode<T> * parent);
    BinaryNode <T> * findLeft(BinaryNode <T> * pElement) const;
    BinaryNode <T> * findRight(BinaryNode <T> * pElement) const;
+   void rotateRight(BinaryNode<T> * in_node);
+   void rotateLeft(BinaryNode<T> * in_node);
    BinaryNode <T> * copy(BinaryNode <T> * pElement);
    BinaryNode <T> * root;
 };
@@ -400,6 +402,16 @@ BSTIterator<T> BST<T> :: rbegin() const
 template<class T>
 void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, BinaryNode<T> * parent)
 {
+   // Quick clean up of 4 node quad-nodes as we walk down the tree
+   if (NULL != in_subtree && in_subtree->pLeft && in_subtree->pRight)
+   {
+      in_subtree->pRight->isRed = in_subtree->pLeft->isRed = false;
+
+      // And if we're not the root, we should be red (if we're a quad node)
+      if (in_subtree->pParent)
+         in_subtree->isRed = true;
+   }
+
    if (NULL == in_subtree)
    {
       try
@@ -423,9 +435,9 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree, 
 
 /**************************************************
 * BST :: REDBLACK
-* Implements a recursive algorithm to insert a
-* binary node in the right spot
-* Note: DOES NOT ATTEMPT TO BALANCE THE TREE
+* Balances the tree. This follows the algorithm
+* laid out by Bro. Jones, with some small changes
+* to make it easier to read and understand
 *************************************************/
 template<class T>
 void BST<T> :: redBlack(BinaryNode<T> * & in_node)
@@ -434,10 +446,25 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    // pointer for new node's parent
    BinaryNode <T> * parent = in_node->pParent;
 
+   // pg 219
+   // case 1 - no parent, in_node is root
+   // set node to black and we're done
+   if (!parent)
+   {
+      in_node->isRed = false;
+      return;
+   }
+   // case 2 - parent is black
+   // do nothing
+   if (!parent->isRed)
+   {
+      return;
+   }
+
+   // if we get this far, we know the parent is not null
+   // so we don't need to do checks on that
    // pointer for new node's grandparent
-   BinaryNode <T> * granny = NULL;
-   if (parent != NULL)
-      granny = parent->pParent;
+   BinaryNode <T> * granny = parent->pParent;
 
    BinaryNode <T> * greatGrandpa = NULL;
    if (granny != NULL)
@@ -457,19 +484,6 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    else if (parent != NULL && parent->isRightChild(in_node))
       sibling = parent->pLeft;
 
-   // pg 219
-   // case 1 - no parent, in_node is root
-   // set in_node to black
-   if (parent == NULL) {
-      in_node->isRed = false;
-      return;
-   }
-   // case 2 - parent is black
-   // do nothing
-   if (!parent->isRed) {
-      return;
-   }
-
    assert(granny != NULL);
    assert(!granny->isRed);  // if granny is red, we violate red-red!
 
@@ -484,63 +498,25 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
       return;
    }
 
+   // Now we move into cases where we need to rotate
    assert(parent->isRed && !granny->isRed && (aunt == NULL || !aunt->isRed));
 
-   // case 4.1
+   // case 4.1: the chain is left-left
+   // for this case, we need to do a right rotation
    if (parent->isLeftChild(in_node) && granny->isLeftChild(parent))
    {
       assert(granny->isRightChild(aunt));
       assert(in_node->isRed);
 
-      granny->isRed = true;
-      parent->isRed = false;
-
-      // rotate right
-      granny->addLeft(sibling);
-      parent->addRight(granny);
-
-      // replace grandparent
-      if (greatGrandpa == NULL)
-      {
-         root = parent;
-      }
-      else if (greatGrandpa->isLeftChild(granny))
-      {
-         greatGrandpa->pLeft = parent;
-      }
-      else if (greatGrandpa->isRightChild(granny))
-      {
-         greatGrandpa->pRight = parent;
-      }
+      rotateRight(granny);
    }
-
    // case 4.2
    else if (parent->isRightChild(in_node) && granny->isRightChild(parent))
    {
       assert(!granny->isRed);
       assert(granny->isLeftChild(aunt));
 
-      // rotate left
-      granny->addRight(sibling);
-      parent->addLeft(granny);
-
-      // replace grandparent
-      if (greatGrandpa == NULL)
-      {
-         parent->pParent = NULL;
-         root = parent;
-      }
-      else if (greatGrandpa->isLeftChild(granny))
-      {
-         greatGrandpa->addLeft(parent);
-      }
-      else if (greatGrandpa->isRightChild(granny))
-      {
-         greatGrandpa->addRight(parent);
-      }
-
-      granny->isRed = true;
-      parent->isRed = false;
+      rotateLeft(granny);
    }
 
    // case 4.4
@@ -549,30 +525,8 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
       assert(granny->isLeftChild(aunt));
       assert(parent->isRightChild(sibling));
 
-      BinaryNode<T> * temp = new BinaryNode <T>(in_node->data);
-      granny->addRight(in_node->pLeft);
-      parent->addLeft(in_node->pRight);
-      temp->addLeft(granny);
-      temp->addRight(parent);
-      in_node = temp;
-
-      // replace grandparent
-      if (greatGrandpa == NULL)
-      {
-         in_node->pParent = NULL;
-         root = in_node;
-      }
-      else if (greatGrandpa->isLeftChild(granny))
-      {
-         greatGrandpa->addLeft(in_node);
-      }
-      else if (greatGrandpa->isRightChild(granny))
-      {
-         greatGrandpa->addRight(in_node);
-      }
-
-      in_node->isRed = false;
-      granny->isRed = true;
+      rotateRight(parent);
+      rotateLeft(granny);
    }
 
    // case 4.3
@@ -582,30 +536,8 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
       assert(parent->isLeftChild(sibling));
       assert(parent->isRed);
 
-      BinaryNode<T> * temp = new BinaryNode <T>(in_node->data);
-      granny->addLeft(in_node->pRight);
-      parent->addRight(in_node->pLeft);
-      temp->addLeft(parent);
-      temp->addRight(granny);
-      in_node = temp;
-
-      // replace grandparent
-      if (greatGrandpa == NULL)
-      {
-         in_node->pParent = NULL;
-         root = in_node;
-      }
-      else if (greatGrandpa->isLeftChild(granny))
-      {
-         greatGrandpa->addLeft(in_node);
-      }
-      else if (greatGrandpa->isRightChild(granny))
-      {
-         greatGrandpa->addRight(in_node);
-      }
-
-      in_node->isRed = false;
-      granny->isRed = true;
+      rotateLeft(parent);
+      rotateRight(granny);
    }
 }
 
@@ -643,6 +575,68 @@ BinaryNode <T> * BST<T> :: findRight(BinaryNode <T> * pElement) const
    }
 
    return tempRight;
+}
+
+/*******************************************************
+* BST:: ROTATERIGHT
+* Rotates a node right in the tree
+********************************************************/
+template<class T>
+inline void BST<T>::rotateRight(BinaryNode<T>* in_node)
+{
+   assert(in_node);
+   if (!in_node)
+      return;
+
+   assert(in_node->pLeft);
+   BinaryNode<T> * left = in_node->pLeft;
+   in_node->pLeft = left->pRight;
+   left->pRight = in_node;
+   left->isRed = false;
+   in_node->isRed = true;
+
+   if (!in_node->pParent) // This WAS the root
+      root = left;
+   else if (in_node->pParent->isLeftChild(in_node))
+      in_node->pParent->pLeft = left;
+   else
+      in_node->pParent->pRight = left;
+
+   left->pParent = in_node->pParent;
+   in_node->pParent = left;
+
+   assert(left->pRight == in_node);
+}
+
+/*************************************************************
+* BST:: ROTATELEFT
+* Rotate a node left in the tree
+**************************************************************/
+template<class T>
+inline void BST<T>::rotateLeft(BinaryNode<T>* in_node)
+{
+   assert(in_node);
+   if (!in_node)
+      return;
+
+   assert(in_node->pRight);
+   BinaryNode<T> * right = in_node->pRight;
+   in_node->pRight = right->pLeft;
+   right->pLeft = in_node;
+   right->isRed = false;
+   in_node->isRed = true;
+
+   if (!in_node->pParent) // This WAS the root
+      root = right;
+   else if (in_node->pParent->isLeftChild(in_node))
+      in_node->pParent->pLeft = right;
+   else
+      in_node->pParent->pRight = right;
+
+   right->pParent = in_node->pParent;
+   in_node->pParent = right;
+
+   assert(right->pLeft == in_node);
 }
 
 /***********************************************************************
