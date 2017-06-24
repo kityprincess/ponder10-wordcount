@@ -6,7 +6,7 @@
 *    Shayla Nelson, Matthew Burr, Kimberly Stowe, Bryan Lopez
 * Summary:
 *    The BST class creates a binary search tree and the BSTIterator
-*        class gives a way to iterator or move through it. 
+*        class gives a way to iterator or move through it.
 ************************************************************************/
 
 #ifndef BST_H
@@ -433,12 +433,16 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    // create pointers to make coding simpler
    // pointer for new node's parent
    BinaryNode <T> * parent = in_node->pParent;
-   
+
    // pointer for new node's grandparent
    BinaryNode <T> * granny = NULL;
    if (parent != NULL)
-      granny = in_node->pParent->pParent;
-   
+      granny = parent->pParent;
+
+   BinaryNode <T> * greatGrandpa = NULL;
+   if (granny != NULL)
+      greatGrandpa = granny->pParent;
+
    // pointer for new node's aunt
    BinaryNode <T> * aunt = NULL;
    if (granny != NULL && granny->isLeftChild(parent))
@@ -453,69 +457,155 @@ void BST<T> :: redBlack(BinaryNode<T> * & in_node)
    else if (parent != NULL && parent->isRightChild(in_node))
       sibling = parent->pLeft;
 
-   // pg 219 
+   // pg 219
    // case 1 - no parent, in_node is root
    // set in_node to black
-   if (parent == NULL)
+   if (parent == NULL) {
       in_node->isRed = false;
+      return;
+   }
    // case 2 - parent is black
    // do nothing
-   else if (!parent->isRed)
+   if (!parent->isRed) {
       return;
+   }
+
+   assert(granny != NULL);
+   assert(!granny->isRed);  // if granny is red, we violate red-red!
+
    // case 3 - parent is red, aunt is red or na, gp is black
    // change gp to red, parent & aunt to black
-   else if (parent->isRed &&
-           (!granny->isRed))
+   if (aunt != NULL && aunt->isRed)
    {
-      if (aunt != NULL && aunt->isRed)
-      {
-      //   granny->isRed = true;
-         aunt->isRed = false;
-      }
+      granny->isRed = true;
       parent->isRed = false;
-
-      // accomodates for red great-grandparent
-      //if (granny->pParent != NULL && granny->pParent->isRed)
-      //   redBlack(granny->pParent);
+      aunt->isRed = false;
+      redBlack(granny);
+      return;
    }
+
+   assert(parent->isRed && !granny->isRed && (aunt == NULL || !aunt->isRed));
+
    // case 4.1
-   if (parent != NULL && parent->isRed && !granny->isRed && 
-      !sibling->isRed && !aunt->isRed && parent->isLeftChild(in_node) &&
-      granny->isLeftChild(parent))
+   if (parent->isLeftChild(in_node) && granny->isLeftChild(parent))
    {
-      if (granny->pParent == NULL)
-      {
-         root = parent;
-      }
-      parent->addRight(granny);
-      in_node->addRight(sibling);
+      assert(granny->isRightChild(aunt));
+      assert(in_node->isRed);
 
       granny->isRed = true;
       parent->isRed = false;
-   }
 
-   // case 4.2
-   if (parent != NULL && parent->isRed && !granny->isRed && 
-      !sibling->isRed && !aunt->isRed && parent->isRightChild(in_node) &&
-      granny->isRightChild(parent))
-   {
-      if (granny->pParent == NULL)
+      // rotate right
+      granny->addLeft(sibling);
+      parent->addRight(granny);
+
+      // replace grandparent
+      if (greatGrandpa == NULL)
       {
          root = parent;
       }
-      parent->addLeft(granny);
+      else if (greatGrandpa->isLeftChild(granny))
+      {
+         greatGrandpa->pLeft = parent;
+      }
+      else if (greatGrandpa->isRightChild(granny))
+      {
+         greatGrandpa->pRight = parent;
+      }
+   }
+
+   // case 4.2
+   else if (parent->isRightChild(in_node) && granny->isRightChild(parent))
+   {
+      assert(!granny->isRed);
+      assert(granny->isLeftChild(aunt));
+
+      // rotate left
       granny->addRight(sibling);
+      parent->addLeft(granny);
+
+      // replace grandparent
+      if (greatGrandpa == NULL)
+      {
+         parent->pParent = NULL;
+         root = parent;
+      }
+      else if (greatGrandpa->isLeftChild(granny))
+      {
+         greatGrandpa->addLeft(parent);
+      }
+      else if (greatGrandpa->isRightChild(granny))
+      {
+         greatGrandpa->addRight(parent);
+      }
 
       granny->isRed = true;
       parent->isRed = false;
    }
 
    // case 4.4
-   if (parent != NULL && parent->isRed && !granny->isRed &&
-      !sibling->isRed && !aunt->isRed && parent->isLeftChild(in_node) &&
-      granny->isRightChild(parent))
+   else if (parent->isLeftChild(in_node) && granny->isRightChild(parent))
    {
+      assert(granny->isLeftChild(aunt));
+      assert(parent->isRightChild(sibling));
 
+      BinaryNode<T> * temp = new BinaryNode <T>(in_node->data);
+      granny->addRight(in_node->pLeft);
+      parent->addLeft(in_node->pRight);
+      temp->addLeft(granny);
+      temp->addRight(parent);
+      in_node = temp;
+
+      // replace grandparent
+      if (greatGrandpa == NULL)
+      {
+         in_node->pParent = NULL;
+         root = in_node;
+      }
+      else if (greatGrandpa->isLeftChild(granny))
+      {
+         greatGrandpa->addLeft(in_node);
+      }
+      else if (greatGrandpa->isRightChild(granny))
+      {
+         greatGrandpa->addRight(in_node);
+      }
+
+      in_node->isRed = false;
+      granny->isRed = true;
+   }
+
+   // case 4.3
+   else if (parent->isRightChild(in_node) && granny->isLeftChild(parent))
+   {
+      assert(granny->isRightChild(aunt));
+      assert(parent->isLeftChild(sibling));
+      assert(parent->isRed);
+
+      BinaryNode<T> * temp = new BinaryNode <T>(in_node->data);
+      granny->addLeft(in_node->pRight);
+      parent->addRight(in_node->pLeft);
+      temp->addLeft(parent);
+      temp->addRight(granny);
+      in_node = temp;
+
+      // replace grandparent
+      if (greatGrandpa == NULL)
+      {
+         in_node->pParent = NULL;
+         root = in_node;
+      }
+      else if (greatGrandpa->isLeftChild(granny))
+      {
+         greatGrandpa->addLeft(in_node);
+      }
+      else if (greatGrandpa->isRightChild(granny))
+      {
+         greatGrandpa->addRight(in_node);
+      }
+
+      in_node->isRed = false;
+      granny->isRed = true;
    }
 }
 
