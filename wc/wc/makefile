@@ -1,11 +1,15 @@
 ###############################################################
 # Program:
 #     Week 10, Map
-#     Brother XXXXX, CS265
+#     Brother JonesL, CS265
 # Author:
-#     <your name here>
+#     Kimberly Stowe - 5 hours
+#     Matt Burr -      5 hours
+#     Shayla Nelson -  6 hours
+#     Bryan Lopez -    5 hours
 # Summary:
-#     <put a description here>
+#     Creates a binary tree and balances it using the red/black
+#     algorithm. 
 ###############################################################
 
 ##############################################################
